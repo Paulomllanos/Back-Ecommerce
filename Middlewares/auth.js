@@ -13,7 +13,7 @@ const getToken = (req, res) => {
     return null;
 }
 
-const auth = expressjwt({
+const auth = expressjwt({   
     secret: process.env.SECRET,
     algorithms: ['HS256'],
     userProperty: 'user',

@@ -12,11 +12,64 @@ const createProduct = async(req, res) => {
         const newProduct = new Product(req.body);
         await newProduct.save();
         
-        res.json({success: true, message: "Se ha creado un nuevo producto", productId: newProduct._id, info})
+        res.json({success: true, message: "Se ha creado un nuevo producto", productId: newProduct._id, newProduct})
     } catch (error) {
         res.json({success: false, message: error.message})
     }
 }
 
+const getProducts = async (req, res) => {
+    try {
+        const products = await Product.find()
 
-module.exports = createProduct;
+        res.json({succes: true, info: products})
+
+    } catch (error) {
+        res.status(500).json({ success: false, msg: "Hubo un error obteniendo los datos" })
+    }
+}
+
+const getProductById = async (req, res) => {
+
+    const { productId } = req.params;
+
+    try {
+        
+        const product = await Product.findById(productId);
+
+        res.json({ success: true, info: product})
+
+    } catch (error) {
+        res.status(500).json({ success: false, msg: "Hubo un error obteniendo los datos" })
+    }
+}
+
+const editProduct = async (req, res) => {
+
+    const { name, price, brand, image, stock } = req.body;
+    const { productId } = req.params;
+    try {
+        const edit = await Product.findByIdAndUpdate(productId, { name, price, brand, image, stock }, { new: true })
+
+        res.json({succes: true, msg: "Producto actualizado", update: edit})
+
+    } catch (error) {
+        res.status(500).json({ success: false, msg: "Hubo un error al actualizar el producto" })
+    }
+}
+
+const deleteProduct = async (req, res) => {
+
+    
+    const { productId } = req.params;
+    try {
+        const product = await Product.findByIdAndDelete(productId)
+
+        res.json({succes: true, msg: "Producto eliminado", delete: product})
+
+    } catch (error) {
+        res.status(500).json({ success: false, msg: "Hubo un error al eliminar el producto" })
+    }
+}
+
+module.exports = {createProduct, getProducts, getProductById, editProduct, deleteProduct}

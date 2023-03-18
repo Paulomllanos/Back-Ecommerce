@@ -51,12 +51,12 @@ const userSchema = new mongoose.Schema({
         default: false
     }
 })
-
+//* encriptar contraseña
 userSchema.methods.hashPassword = function(password){
     this.salt = crypto.randomBytes(10).toString('hex')
     this.password = crypto.pbkdf2Sync(password, this.salt, 5000, 20, 'sha512').toString('hex')
 }
-
+//* validar contraseñas
 userSchema.methods.hashValidation = function(password, salt, passwordDB) {
     const hash = crypto.pbkdf2Sync(password, salt, 5000, 20, 'sha512').toString('hex');
     return hash === passwordDB;
@@ -70,7 +70,7 @@ userSchema.methods.generateToken = function() {
         email: this.email
     }
 
-    const token = jwt.sign(payload, process.env.SECRET);
+    const token = jwt.sign(payload, process.env.SECRET, { expiresIn: 360000 });
     return token;
 }
 

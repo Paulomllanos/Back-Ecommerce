@@ -6,7 +6,6 @@ const createUser = async(req, res) => {
     try {
         //* verificar email en uso
         const user = await User.findOne({ email: req.body.email })
-        
         if(user){
             throw new Error('Email in use!!')
         } 
@@ -53,27 +52,45 @@ const deleteUser = async(req, res) => {
 }
 
 const editUser = async(req, res) => {
+
+    const updateUser = req.body;
+    const { id } = req.auth;
+    console.log(id)
     try {
-        const paramsId = req.params.id
-        const authId = req.auth.id
-        console.log(authId)
-        const result = await User.findByIdAndUpdate(authId, req.body, {new: true});
+
+        //* creamos esta busqueda para validar que no exista el correo a editar o no sea el mismo
+
+        const emails = await User.find()
+       
+        emails.forEach(user =>{
+            if(user.email === req.body.email){
+        
+                    throw new Error("Email en uso")
+                }
+            }
+        )
             
-        console.log(result)
-            
+        const result = await User.findByIdAndUpdate(req.auth.id, updateUser, {new: true}).select("-password -salt");
+ 
         if(!result){
             throw new Error("Usuario no existe, imposible de editar!")
         }
 
-        if(paramsId !== authId){
-            throw new Error('No puedes editar, por que no eres el usuario de la cuenta!')
-        }
+        res.json({success: true, message: "Usuario editado con exito!!", info: result})
         
-        if(req.auth.email === result.email){
-            throw new Error("Email en uso!!!")
-        }
+    } catch (error) {
+        res.json({success: false, message: error.message})
+    }
+}
 
-        res.json({success: true, message: "Usuario editado con exito!!"})
+const getUserVerify = async(req, res) => {
+    try {
+        
+        const { id } = req.auth
+        
+        const result = await User.findById(id).populate('favoriteProducts').select("-password -salt");
+
+        res.json({success: true, message: `Informacion de: ${result.email}`, info: result})
 
     } catch (error) {
         res.json({success: false, message: error.message})
@@ -83,8 +100,9 @@ const editUser = async(req, res) => {
 const signIn = async(req, res) => {
     try {
         const { email, password } = req.body;
-
+        
         const user = await User.findOne({ email })
+
         if(!user){
             throw new Error('User not register!!')
         }
@@ -102,4 +120,5 @@ const signIn = async(req, res) => {
     }
 }
 
-module.exports = { createUser, getUsers, deleteUser, editUser, signIn }
+
+module.exports = { createUser, getUsers, deleteUser, editUser, signIn, getUserVerify }
