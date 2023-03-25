@@ -72,4 +72,16 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-module.exports = {createProduct, getProducts, getProductById, editProduct, deleteProduct}
+const reduceStock = async (req, res) => {
+    const purshasedProducts = req.body.cartItems
+    try {
+        purshasedProducts.map(async(purshasedProduct) => {
+        await Product.findByIdAndUpdate(purshasedProduct._id, { stock: purshasedProduct.stock - purshasedProduct.quantity })
+      })
+      res.json({ success: true, msg: 'stock reduced' })
+    } catch(error) {
+      res.json({ success: false, error: error.message })
+    }
+  }
+
+module.exports = {createProduct, getProducts, getProductById, editProduct, deleteProduct, reduceStock}
